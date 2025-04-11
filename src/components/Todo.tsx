@@ -1,5 +1,5 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useCreateTodo } from '../services/mutations';
+import { useCreateTodo, useDeleteTodo, useUpdateTodo } from '../services/mutations';
 import { useTodos, useTodosIds } from '../services/queries';
 import { Todo as TTodo } from '../types/todo';
 
@@ -11,11 +11,22 @@ export default function Todo() {
 
   const createTodoMutation = useCreateTodo();
 
+  const updateTodoMutation = useUpdateTodo();
+  const deleteTodoMutation = useDeleteTodo();
+
   const { register, handleSubmit, reset } = useForm<TTodo>();
   const handleCreateTodoSubmit: SubmitHandler<TTodo> = (data) => {
     createTodoMutation.mutate({ ...data, checked: false });
     reset();
   };
+  const handleCompleteTodo = (data: TTodo) => {
+    updateTodoMutation.mutate({ ...data, checked: true });
+  };
+  const handleDeleteTodo = async (id: number) => {
+    await deleteTodoMutation.mutateAsync(id);
+    console.log('Deleted: ', id);
+  };
+
   //   if (isPending) return <span>Loading...</span>;
   if (isError) return <span>Error! try again</span>;
   return (
@@ -38,7 +49,13 @@ export default function Todo() {
         <span key={todo}>{todo},</span>
       ))}
       {todosQueries.map(({ data }) => (
-        <p key={data?.id}>{data?.title}</p>
+        <>
+          <p key={data?.id}>{data?.title}</p>
+          <button onClick={() => handleCompleteTodo(data!)} disabled={data?.checked}>
+            {data?.checked ? 'Done' : 'Mark as Done'}
+          </button>
+          <button onClick={() => handleDeleteTodo(data!.id)}>Delete</button>
+        </>
       ))}
     </>
   );

@@ -13,7 +13,7 @@ export const useTodosIds = () => {
 export const useTodos = (ids: number[] = []) => {
   return useQueries({
     queries: ids.map((id) => ({
-      queryKey: ['todo', id],
+      queryKey: ['todo', { id }],
       queryFn: () => getTodo(id),
     })),
   });
